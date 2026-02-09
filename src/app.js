@@ -36,7 +36,11 @@ app.get("/", (req,resp) => {
 });
 
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "OK", uptime: process.uptime() });
+  res.status(200).json({
+    status: "OK",
+    message: "ERP Backend is healthy 🚀",
+    uptime: process.uptime()
+  });
 });
 
 module.exports = app;
