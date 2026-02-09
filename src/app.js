@@ -35,5 +35,9 @@ app.get("/", (req,resp) => {
     resp.send("ERP API Running");
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "OK", uptime: process.uptime() });
+});
+
 module.exports = app;
 
