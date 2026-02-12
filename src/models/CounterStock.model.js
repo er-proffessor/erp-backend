@@ -31,6 +31,7 @@ const counterStockSchema = new mongoose.Schema(
             default: true
         },
 },
+
 {timestamps: true}
 
 );

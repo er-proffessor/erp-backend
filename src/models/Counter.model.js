@@ -19,6 +19,10 @@ const counterSchema = new mongoose.Schema(
       ref: "School",
       required: true,
     },
+    mobileNo: {
+      type: String,
+      required: true 
+    },
 
     status: {
       type: String,

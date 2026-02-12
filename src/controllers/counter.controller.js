@@ -1,9 +1,10 @@
 const Counter = require("../models/Counter.model");
+const CounterStock = require("../models/CounterStock.model");
 
 // Create Counter
 const createCounter = async (req, res) => {
   try {
-    const { name, schoolId } = req.body;
+    const { name, schoolId, schoolName, mobileNo } = req.body;
     const branchId = req.user.branchId;
 
     const exists = await Counter.findOne({ 
@@ -20,8 +21,10 @@ const createCounter = async (req, res) => {
     const counter = await Counter.create({
       name,
       schoolId,
+      schoolName,
+      mobileNo,
       branchId,
-      createdBy: req.user.userid,
+      createdBy: req.user.userId,
     });
 
     res.status(201).json(counter);
@@ -61,13 +64,28 @@ const getCountersByBranch = async (req, res) => {
       branchId: req.params.branchId,
         status: "ACTIVE"
     })
-      .populate("schoolId", "name")
+      .populate("schoolId", "schoolName")
       .sort({ createdAt: -1 });
 
-      console.log(counters);
-      
-    res.json(counters);
+      const countersWithStock = await Promise.all(
+                
+                  counters.map(async (counter) => {
+                    const stockCount = await CounterStock.countDocuments({
+                    branchId: req.params.branchId,
+                    counterId: counter._id
+              });
 
+    return {
+      ...counter.toObject(),
+      stockCount
+    };
+  })
+);
+
+res.json(countersWithStock);
+
+      // console.log(counters);
+      
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -10,7 +10,7 @@ const {createCounter, getCountersBySchool,
 
 router.post("/addCounter", authMiddleware, roleMiddleware("CLIENT"), createCounter);
 router.get("/school/:schoolId", authMiddleware, getCountersBySchool);
-router.get("/branch/:branchId", authMiddleware, getCountersByBranch);
+router.get("/:branchId/counters", authMiddleware, getCountersByBranch);
 router.put("/:counterId", authMiddleware, roleMiddleware("CLIENT"), updateCounter);
 router.delete("/:counterId", authMiddleware, roleMiddleware("CLIENT"), deleteCounter);
 

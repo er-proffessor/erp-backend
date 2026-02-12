@@ -81,7 +81,7 @@ const getSchoolsByBranch = async (req, res) => {
     // .select("_id name")
     console.log(schools);
     
-   return res.status(200).json(schools);
+   return res.status(200).json({data: schools});
 
     
 
