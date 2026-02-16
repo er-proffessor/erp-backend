@@ -50,7 +50,7 @@ const createBook = async (req, resp) => {
             
             resp.status(200).json({ success: true, data: books });
             
-            // console.log(books);
+            console.log(books);
 
         }
         catch(error){

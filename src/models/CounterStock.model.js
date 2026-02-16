@@ -7,7 +7,7 @@ const counterStockSchema = new mongoose.Schema(
             ref: "Branch",
             required: true
         },
-
+        
         counterId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Counter",
@@ -20,10 +20,11 @@ const counterStockSchema = new mongoose.Schema(
             required: true
         },
 
-        qunatity: {
+        quantity: {
             type: Number,
             default: 0,
-            min: 0
+            min: 0,
+            required: true
         },
 
         status: {

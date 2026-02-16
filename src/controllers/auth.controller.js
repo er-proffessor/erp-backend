@@ -1,4 +1,5 @@
 const User = require("../models/User.model");
+const Counter = require("../models/Counter.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Branch = require("../models/Branch.model");
@@ -62,23 +63,42 @@ exports.login = async (req, resp) => {
         }
 
         let branchId = null;
+        let counterId = null;
 
-            if(user.role === "CLIENT"){
-                const branch = await Branch.findOne({userId: user._id});
-               if(!branch) {
-                    return resp.status(403).json({message: "No Branch assign to this account"});
-               }
+            if (user.role === "CLIENT") {
+                const branch = await Branch.findOne({ userId: user._id });
+
+                if (!branch) {
+                    return resp.status(403).json({ message: "No Branch assign to this account" });
+                }
 
                 branchId = branch._id;
-
             }
+
+            if (user.role === "COUNTER") {
+
+                const counter = await Counter.findOne({ 
+                userId: user._id,
+                status: "ACTIVE"   // ✅ ADD THIS LINE
+            });
+
+            if (!counter) {
+                return resp.status(403).json({ 
+                message: "Counter is inactive or not assigned" 
+            });
+            }
+
+                branchId = counter.branchId;
+                counterId = counter._id;
+        }
 
         const token = jwt.sign(
             { 
                 userId: user._id, 
                 role: user.role,
-                branchId
-             },
+                branchId,
+                counterId
+            },
             process.env.JWT_SECRET,
             { expiresIn: "1d" }
         );
@@ -88,6 +108,7 @@ exports.login = async (req, resp) => {
             token,
             role: user.role,
             branchId,
+            counterId,
             user: {
                 id: user._id,
                 name: user.name,

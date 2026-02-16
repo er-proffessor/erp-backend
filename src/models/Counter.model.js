@@ -7,11 +7,19 @@ const counterSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    },
     branchId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Branch",
       required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true
     },
 
     schoolId: {
@@ -19,6 +27,7 @@ const counterSchema = new mongoose.Schema(
       ref: "School",
       required: true,
     },
+
     mobileNo: {
       type: String,
       required: true 

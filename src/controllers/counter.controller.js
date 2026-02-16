@@ -1,11 +1,16 @@
+const Book = require("../models/Book.model");
 const Counter = require("../models/Counter.model");
 const CounterStock = require("../models/CounterStock.model");
+const bcrypt = require("bcryptjs");
+const User = require("../models/User.model");
 
 // Create Counter
 const createCounter = async (req, res) => {
   try {
-    const { name, schoolId, schoolName, mobileNo } = req.body;
+    const { name, schoolId, schoolName, mobileNo, email, password } = req.body;
     const branchId = req.user.branchId;
+
+    
 
     const exists = await Counter.findOne({ 
         name, 
@@ -14,20 +19,57 @@ const createCounter = async (req, res) => {
         status: "ACTIVE"
     });
 
+    console.log(exists);
+
     if (exists) {
       return res.status(400).json({ message: "Counter already exists" });
     }
 
+    // 🔐 CHECK USER EMAIL (not counter)
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "Email already used" });
+    }
+
+    // 🔐 CREATE LOGIN USER
+    
+    const defaultPassword = password && password.trim() !== "" 
+    ? password 
+    : "counter123";
+
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+    const counterEmailExists = await Counter.findOne({ email });
+
+    if(counterEmailExists){
+      return res.status(400).json({ message: "Counter email already used" });
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: "COUNTER"
+    });
+
+    console.log(user);
+
+    // 🏪 CREATE COUNTER
     const counter = await Counter.create({
       name,
       schoolId,
       schoolName,
       mobileNo,
+      email,
       branchId,
+      userId: user._id,   // 🔗 LINK LOGIN USER
       createdBy: req.user.userId,
     });
 
+    console.log(counter);
+    
     res.status(201).json(counter);
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -49,47 +91,48 @@ const getCountersBySchool = async (req, res) => {
   }
 };
 
+
 // Get all counter listed by Publication
+
 const getCountersByBranch = async (req, res) => {
   try {
-          
-          console.log(req.user.branchId);
-          console.log(req.params.branchId);
+    const branchId = req.user.branchId;
 
-            if (req.user.branchId !== req.params.branchId) {
-                return res.status(403).json({ message: "Unauthorized access" });
+    const counters = await Counter.find({ branchId });
+
+    const countersWithStock = await Promise.all(
+      counters.map(async (counter) => {
+
+        const stock = await CounterStock.aggregate([
+          {
+            $match: {
+              counterId: counter._id,
+              branchId: branchId
             }
+          },
+          {
+            $group: {
+              _id: "$counterId",
+              total: { $sum: "$quantity" }
+            }
+          }
+        ]);
 
-    const counters = await Counter.find({
-      branchId: req.params.branchId,
-        status: "ACTIVE"
-    })
-      .populate("schoolId", "schoolName")
-      .sort({ createdAt: -1 });
+        return {
+          ...counter._doc,
+          totalBooksAssigned: stock.length > 0 ? stock[0].total : 0
+        };
+      })
+    );
 
-      const countersWithStock = await Promise.all(
-                
-                  counters.map(async (counter) => {
-                    const stockCount = await CounterStock.countDocuments({
-                    branchId: req.params.branchId,
-                    counterId: counter._id
-              });
+    res.json(countersWithStock);
 
-    return {
-      ...counter.toObject(),
-      stockCount
-    };
-  })
-);
-
-res.json(countersWithStock);
-
-      // console.log(counters);
-      
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
+
 
 // Counter update
 
