@@ -3,6 +3,7 @@ const Counter = require("../models/Counter.model");
 const CounterStock = require("../models/CounterStock.model");
 const bcrypt = require("bcryptjs");
 const User = require("../models/User.model");
+const mongoose = require("mongoose");
 
 // Create Counter
 const createCounter = async (req, res) => {
@@ -96,9 +97,11 @@ const getCountersBySchool = async (req, res) => {
 
 const getCountersByBranch = async (req, res) => {
   try {
-    const branchId = req.user.branchId;
+    const branchId = new mongoose.Types.ObjectId(req.user.branchId);
 
-    const counters = await Counter.find({ branchId });
+    const counters = await Counter.find({ branchId, status: "ACTIVE" }).populate("schoolId", "schoolName");
+
+    // console.log(counters);
 
     const countersWithStock = await Promise.all(
       counters.map(async (counter) => {
@@ -120,6 +123,7 @@ const getCountersByBranch = async (req, res) => {
 
         return {
           ...counter._doc,
+          schoolName: counter.schoolId ? counter.schoolId.schoolName : "N/A",
           totalBooksAssigned: stock.length > 0 ? stock[0].total : 0
         };
       })
@@ -163,14 +167,18 @@ const updateCounter = async (req, res) => {
 
 const deleteCounter = async (req, res) => {
   try {
+
+    console.log(req.params.counterId);
+
     const counter = await Counter.findOneAndUpdate(
         {
-            _id: req.params.id,
+            _id: req.params.counterId,
             branchId: req.user.branchId,
         },
         { status: "INACTIVE" },
         { new: true }
     );
+      
 
         if (!counter) {
         return res.status(404).json({ message: "Counter not found" });
