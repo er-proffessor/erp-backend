@@ -142,22 +142,21 @@ const getCountersByBranch = async (req, res) => {
 
 const updateCounter = async (req, res) => {
   try {
-    const { name, status } = req.body;
-    
-    const counter = await Counter.findOneAndUpdate(
-  {
-    _id: req.params.id,
-    branchId: req.user.branchId,
-  },
-  { name, status },
-  { new: true }
-);
+    const { id } = req.params;
+    const branchId = req.user.branchId;
 
-    if (!counter) {
+    const updated = await Counter.findOneAndUpdate(
+      { _id: id, branchId },
+      req.body,
+      { new: true }
+    );
+
+    if (!updated) {
       return res.status(404).json({ message: "Counter not found" });
     }
 
-    res.json(counter);
+    res.json(updated);
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -191,5 +190,26 @@ const deleteCounter = async (req, res) => {
   }
 };
 
+const getSingleCounter = async (req, res) => {
+  try {
+    const counter = await Counter.findOne({
+      _id: req.params.id,
+      branchId: req.user.branchId,
+      status: "ACTIVE"
+    }).populate("schoolId", "schoolName");
 
-module.exports = {createCounter, getCountersBySchool, getCountersByBranch, updateCounter, deleteCounter};
+    if (!counter) {
+      return res.status(404).json({ message: "Counter not found" });
+    }
+
+    res.json({
+      success: true,
+      data: counter
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = {createCounter, getCountersBySchool, getCountersByBranch, updateCounter, deleteCounter, getSingleCounter};

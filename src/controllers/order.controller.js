@@ -99,7 +99,7 @@ const getAvailableBooksAtCounter = async (req, res) => {
     const counter = await Counter.findOne({
                 _id: counterId,
                 branchId
-            });
+            }).populate("schoolId", "schoolName");
 
     if (!counter) {
       return res.status(404).json({ message: "Counter not found" });
@@ -111,7 +111,7 @@ const getAvailableBooksAtCounter = async (req, res) => {
       counterId,
       quantity: { $gt: 0 }
     })
-    .populate("bookId", "bookName sellPrice");
+    .populate("bookId", "bookName sellPrice className mrp");
 
         console.log(stocks);
 
@@ -120,7 +120,10 @@ const getAvailableBooksAtCounter = async (req, res) => {
       stockId: stock._id,
       bookId: stock.bookId._id,
       bookName: stock.bookId.bookName,
-      price: stock.bookId.sellPrice,
+      className: stock.bookId.className,
+      schoolName: counter.schoolId?.schoolName || "",
+      mrp: stock.bookId.mrp || 0,
+      sellPrice: stock.bookId.sellPrice || 0,
       availableQuantity: stock.quantity
     }));
 

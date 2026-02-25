@@ -58,4 +58,26 @@ const createBook = async (req, resp) => {
         }
     };
 
-module.exports = {createBook, getBooksByBranch};
+    const updateBook = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const branchId = req.user.branchId;
+
+    const updated = await Book.findOneAndUpdate(
+      { _id: id, branchId },
+      req.body,
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+
+    res.json(updated);
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = {createBook, getBooksByBranch, updateBook};

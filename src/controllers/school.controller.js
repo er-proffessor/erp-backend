@@ -90,4 +90,26 @@ const getSchoolsByBranch = async (req, res) => {
   }
 };
 
-module.exports = {addSchool, getSchoolList, getSchoolsByBranch};
+const updateSchool = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const branchId = req.user.branchId;
+
+    const updated = await School.findOneAndUpdate(
+      { _id: id, branchId },
+      req.body,
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "School not found" });
+    }
+
+    res.json(updated);
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = {addSchool, getSchoolList, getSchoolsByBranch, updateSchool};
