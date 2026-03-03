@@ -152,7 +152,9 @@ const updateCounter = async (req, res) => {
       { _id: id, branchId },
       req.body,
       { new: true }
-    );
+    ).populate("schoolId", "schoolName");
+
+    console.log(updated);
 
     if (!updated) {
       return res.status(404).json({ message: "Counter not found" });

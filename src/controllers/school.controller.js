@@ -90,6 +90,8 @@ const getSchoolsByBranch = async (req, res) => {
   }
 };
 
+  // Update School Details
+
 const updateSchool = async (req, res) => {
   try {
     const { id } = req.params;
@@ -112,4 +114,18 @@ const updateSchool = async (req, res) => {
   }
 };
 
-module.exports = {addSchool, getSchoolList, getSchoolsByBranch, updateSchool};
+  // Delete School from list
+
+const deleteSchool = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await School.findByIdAndDelete(id);
+
+    res.json({ success: true, message: "School deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {addSchool, getSchoolList, getSchoolsByBranch, updateSchool, deleteSchool};

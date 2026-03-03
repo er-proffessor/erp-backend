@@ -2,6 +2,7 @@ const Order = require("../models/Order.model");
 const CounterStock = require("../models/CounterStock.model");
 const Counter = require("../models/Counter.model");
 const Book = require("../models/Book.model");
+const PDFDocument = require("pdfkit");
 
 // const createOrder = async (req, res) => {
 //   try {
@@ -291,5 +292,68 @@ const getOrdersByCounter = async (req, res) => {
   }
 };
 
+// Download Invoice module
 
-module.exports = { createOrder, getAvailableBooksAtCounter, getOrdersByCounter };
+      const downloadInvoice = async (req, res) => {
+        try {
+          const { orderId } = req.params;
+
+          const order = await Order.findById(orderId)
+            .populate("books.bookId", "bookName");
+
+          if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+          }
+
+          const doc = new PDFDocument({ margin: 40 });
+
+          res.setHeader("Content-Type", "application/pdf");
+          res.setHeader(
+            "Content-Disposition",
+            `attachment; filename=invoice-${order._id}.pdf`
+          );
+
+          doc.pipe(res);
+
+          // ===== HEADER =====
+          doc.fontSize(20).text("N K Publication", { align: "center" });
+          doc.moveDown();
+          doc.fontSize(14).text("Invoice Receipt");
+          doc.moveDown();
+
+          doc.fontSize(12).text(`Invoice ID: ${order._id}`);
+          doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`);
+          doc.moveDown();
+
+          doc.text(`Student: ${order.studentName || "-"}`);
+          doc.text(`Father Name: ${order.fatherName || "-"}`);
+          doc.text(`Class: ${order.className || "-"}`);
+          doc.moveDown();
+
+          // ===== TABLE HEADER =====
+          doc.text("------------------------------------------------------------");
+          doc.text("Book Name        Qty        Price        Total");
+          doc.text("------------------------------------------------------------");
+
+          order.books.forEach(item => {
+            doc.text(
+              `${item.bookId?.bookName}    ${item.quantity}        ₹${item.price}        ₹${item.total}`
+            );
+          });
+
+          doc.text("------------------------------------------------------------");
+          doc.moveDown();
+
+          doc.fontSize(14).text(`Grand Total: ₹ ${order.totalAmount}`, {
+            align: "right"
+          });
+
+          doc.end();
+
+        } catch (err) {
+          res.status(500).json({ message: err.message });
+        }
+      };
+
+
+module.exports = { createOrder, getAvailableBooksAtCounter, getOrdersByCounter, downloadInvoice };

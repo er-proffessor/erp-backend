@@ -58,26 +58,46 @@ const createBook = async (req, resp) => {
         }
     };
 
+        // Update Book Controller
+        
     const updateBook = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const branchId = req.user.branchId;
+        try {
+            const { id } = req.params;
+            const branchId = req.user.branchId;
 
-    const updated = await Book.findOneAndUpdate(
-      { _id: id, branchId },
-      req.body,
-      { new: true }
-    );
+            const updated = await Book.findOneAndUpdate(
+            { _id: id, branchId },
+            req.body,
+            { new: true }
+            );
 
-    if (!updated) {
-      return res.status(404).json({ message: "Book not found" });
-    }
+            if (!updated) {
+            return res.status(404).json({ message: "Book not found" });
+            }
 
-    res.json(updated);
+            res.json(updated);
 
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
+        } catch (err) {
+            res.status(500).json({ message: err.message });
+        }
+        };
 
-module.exports = {createBook, getBooksByBranch, updateBook};
+            // Delete Book controller
+
+            const deleteBook = async (req, res) => {
+                try {
+                    const { id } = req.params;
+
+                    await Book.findByIdAndDelete(id);
+
+                    res.json({
+                    success: true,
+                    message: "Book deleted successfully"
+                    });
+
+                } catch (error) {
+                    res.status(500).json({ message: error.message });
+                }
+                };
+
+module.exports = {createBook, getBooksByBranch, updateBook, deleteBook};
