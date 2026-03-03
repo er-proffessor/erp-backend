@@ -69,7 +69,10 @@ const createCounter = async (req, res) => {
 
     console.log(counter);
     
-    res.status(201).json(counter);
+    const populatedCounter = await Counter.findById(counter._id)
+  .populate("schoolId", "schoolName");
+
+res.status(201).json(populatedCounter);
 
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -155,7 +158,10 @@ const updateCounter = async (req, res) => {
       return res.status(404).json({ message: "Counter not found" });
     }
 
-    res.json(updated);
+    res.json({
+      suceess: true,
+      data: updated
+    });
 
   } catch (err) {
     res.status(500).json({ message: err.message });
