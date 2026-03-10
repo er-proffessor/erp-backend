@@ -371,7 +371,126 @@ const getOrdersByCounter = async (req, res) => {
       //   }
       // };
 
-      const downloadInvoice = async (req, res) => {
+//       const downloadInvoice = async (req, res) => {
+//   try {
+//     const { orderId } = req.params;
+
+//     const order = await Order.findById(orderId)
+//       .populate("books.bookId", "bookName");
+
+//     if (!order) {
+//       return res.status(404).json({ message: "Order not found" });
+//     }
+
+//     const doc = new PDFDocument({ margin: 50 });
+
+//     res.setHeader("Content-Type", "application/pdf");
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename=invoice-${order._id}.pdf`
+//     );
+
+//     doc.pipe(res);
+
+//     // ===== HEADER =====
+//     doc
+//       .fontSize(22)
+//       .text("N K Publication", { align: "center" });
+
+//     doc
+//       .fontSize(12)
+//       .text("Educational Book Distributor", { align: "center" });
+
+//     doc.moveDown(2);
+
+//     // ===== INVOICE TITLE =====
+//     doc
+//       .fontSize(16)
+//       .text("INVOICE RECEIPT", { align: "center", underline: true });
+
+//     doc.moveDown(2);
+
+//     // ===== INVOICE DETAILS =====
+//     doc.fontSize(11);
+
+//     doc.text(`Invoice ID : ${order._id}`);
+//     doc.text(`Date : ${new Date(order.createdAt).toLocaleDateString()}`);
+//     doc.text(`Billing Status : ${order.billingStatus}`);
+//     doc.moveDown();
+
+//     // ===== CUSTOMER DETAILS =====
+//     doc.text(`Student Name : ${order.studentName || "-"}`);
+//     doc.text(`Father Name : ${order.fatherName || "-"}`);
+//     doc.text(`Mobile No : ${order.mobileNo || "-"}`);
+//     doc.text(`Class : ${order.className || "-"}`);
+
+//     doc.moveDown();
+
+//     // ===== PAYMENT DETAILS =====
+//     doc.text(`Payment Type : ${order.paymentType}`);
+//     doc.text(`UTR No : ${order.utrNo || "-"}`);
+
+//     doc.moveDown(2);
+
+//     // ===== TABLE HEADER =====
+//     const tableTop = doc.y;
+
+//     doc
+//       .fontSize(12)
+//       .text("Book Name", 50, tableTop)
+//       .text("Qty", 300, tableTop)
+//       .text("Price", 350, tableTop)
+//       .text("Total", 420, tableTop);
+
+//     doc.moveDown();
+
+//     doc.text("------------------------------------------------------------------");
+
+//     // ===== BOOK ITEMS =====
+//     order.books.forEach((item, index) => {
+
+//       const y = doc.y + 5;
+
+//       doc
+//         .fontSize(11)
+//         .text(item.bookId?.bookName || "-", 50, y)
+//         .text(item.quantity, 300, y)
+//         .text(`Rs. ${item.price}`, 350, y)
+//         .text(`Rs. ${item.total}`, 420, y);
+
+//       doc.moveDown();
+//     });
+
+//     doc.text("------------------------------------------------------------------");
+
+//     doc.moveDown(2);
+
+//     // ===== GRAND TOTAL =====
+//     doc
+//       .fontSize(14)
+//       .text(`Grand Total : Rs. ${order.totalAmount}`, {
+//         align: "right"
+//       });
+
+//     doc.moveDown(3);
+
+//     // ===== FOOTER =====
+//     doc
+//       .fontSize(11)
+//       .text("Thank you for your purchase!", { align: "center" });
+
+//     doc
+//       .fontSize(10)
+//       .text("N K Publication", { align: "center" });
+
+//     doc.end();
+
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+const downloadInvoice = async (req, res) => {
   try {
     const { orderId } = req.params;
 
@@ -392,96 +511,114 @@ const getOrdersByCounter = async (req, res) => {
 
     doc.pipe(res);
 
-    // ===== HEADER =====
+    /* =============================
+        HEADER
+    ============================== */
+
     doc
       .fontSize(22)
       .text("N K Publication", { align: "center" });
 
     doc
-      .fontSize(12)
+      .fontSize(11)
       .text("Educational Book Distributor", { align: "center" });
 
-    doc.moveDown(2);
+    doc.moveDown();
 
-    // ===== INVOICE TITLE =====
     doc
       .fontSize(16)
       .text("INVOICE RECEIPT", { align: "center", underline: true });
 
     doc.moveDown(2);
 
-    // ===== INVOICE DETAILS =====
+    /* =============================
+        INVOICE INFO
+    ============================== */
+
     doc.fontSize(11);
 
     doc.text(`Invoice ID : ${order._id}`);
     doc.text(`Date : ${new Date(order.createdAt).toLocaleDateString()}`);
-    doc.text(`Billing Status : ${order.billingStatus}`);
-    doc.moveDown();
-
-    // ===== CUSTOMER DETAILS =====
-    doc.text(`Student Name : ${order.studentName || "-"}`);
-    doc.text(`Father Name : ${order.fatherName || "-"}`);
-    doc.text(`Mobile No : ${order.mobileNo || "-"}`);
-    doc.text(`Class : ${order.className || "-"}`);
+    doc.text(`Billing Status : ${order.status || "PAID"}`);
 
     doc.moveDown();
 
-    // ===== PAYMENT DETAILS =====
-    doc.text(`Payment Type : ${order.paymentType}`);
-    doc.text(`UTR No : ${order.utrNo || "-"}`);
+    doc.text(`Student Name : ${order.studentName}`);
+    doc.text(`Father Name : ${order.fatherName}`);
+    doc.text(`Mobile No : ${order.mobile || "-"}`);
+    doc.text(`Class : ${order.className}`);
+
+    doc.moveDown();
+
+    doc.text(`Payment Type : ${order.paymentMethod || "-"}`);
+    doc.text(`UTR No : ${order.utrNumber || "-"}`);
 
     doc.moveDown(2);
 
-    // ===== TABLE HEADER =====
+    /* =============================
+        TABLE HEADER
+    ============================== */
+
     const tableTop = doc.y;
+
+    const itemX = 50;
+    const qtyX = 350;
+    const priceX = 420;
+    const totalX = 500;
 
     doc
       .fontSize(12)
-      .text("Book Name", 50, tableTop)
-      .text("Qty", 300, tableTop)
-      .text("Price", 350, tableTop)
-      .text("Total", 420, tableTop);
+      .text("Book Name", itemX, tableTop)
+      .text("Qty", qtyX, tableTop)
+      .text("Price", priceX, tableTop)
+      .text("Total", totalX, tableTop);
 
-    doc.moveDown();
+    doc.moveTo(50, tableTop + 15)
+      .lineTo(550, tableTop + 15)
+      .stroke();
 
-    doc.text("------------------------------------------------------------------");
+    /* =============================
+        TABLE ROWS
+    ============================== */
 
-    // ===== BOOK ITEMS =====
-    order.books.forEach((item, index) => {
+    let y = tableTop + 30;
 
-      const y = doc.y + 5;
-
+    order.books.forEach((item) => {
       doc
         .fontSize(11)
-        .text(item.bookId?.bookName || "-", 50, y)
-        .text(item.quantity, 300, y)
-        .text(`Rs. ${item.price}`, 350, y)
-        .text(`Rs. ${item.total}`, 420, y);
+        .text(item.bookId?.bookName || "-", itemX, y)
+        .text(item.quantity, qtyX, y)
+        .text(`Rs. ${item.price}`, priceX, y)
+        .text(`Rs. ${item.total}`, totalX, y);
 
-      doc.moveDown();
+      y += 20;
     });
 
-    doc.text("------------------------------------------------------------------");
+    /* =============================
+        TOTAL SECTION
+    ============================== */
 
-    doc.moveDown(2);
+    doc.moveTo(350, y + 10)
+      .lineTo(550, y + 10)
+      .stroke();
 
-    // ===== GRAND TOTAL =====
     doc
-      .fontSize(14)
-      .text(`Grand Total : Rs. ${order.totalAmount}`, {
-        align: "right"
-      });
+      .fontSize(13)
+      .text(`Grand Total : Rs. ${order.totalAmount}`, 350, y + 20);
 
-    doc.moveDown(3);
+    /* =============================
+        FOOTER
+    ============================== */
 
-    // ===== FOOTER =====
-    doc
-      .fontSize(11)
-      .text("Thank you for your purchase!", { align: "center" });
+    doc.moveDown(4);
 
     doc
       .fontSize(10)
-      .text("N K Publication", { align: "center" });
+      .text("Thank you for your purchase!", { align: "center" });
+
+    doc
+      .fontSize(9)
+      .text("This is a computer generated receipt.", { align: "center" });
 
     doc.end();
 
@@ -489,6 +626,5 @@ const getOrdersByCounter = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
 
 module.exports = { createOrder, getAvailableBooksAtCounter, getOrdersByCounter, downloadInvoice };
