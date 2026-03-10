@@ -46,7 +46,10 @@ const createBook = async (req, resp) => {
         try{
             const { branchId } = req.params;
 
-            const books = await Book.find({ branchId }).sort({ createdAt: -1 });
+            const books = await Book.find({ 
+                branchId,
+                status: "ACTIVE"
+            }).sort({ createdAt: -1 });
             
             resp.status(200).json({ success: true, data: books });
             
@@ -86,9 +89,19 @@ const createBook = async (req, resp) => {
 
             const deleteBook = async (req, res) => {
                 try {
-                    const { id } = req.params;
 
-                    await Book.findByIdAndDelete(id);
+                    const book = await Book.findOneAndUpdate(
+                        {
+                            _id: req.params.id,
+                            branchId: req.user.branchId
+                        },
+                        {   status: "INACTIVE", },
+                        {   new: true   }
+                    );
+
+                    if(!book) {
+                        return res.status(404).json({message: "Book not found"});
+                    }
 
                     res.json({
                     success: true,

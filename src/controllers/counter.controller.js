@@ -20,7 +20,7 @@ const createCounter = async (req, res) => {
         status: "ACTIVE"
     });
 
-    console.log(exists);
+    // console.log(exists);
 
     if (exists) {
       return res.status(400).json({ message: "Counter already exists" });
@@ -53,7 +53,7 @@ const createCounter = async (req, res) => {
       role: "COUNTER"
     });
 
-    console.log(user);
+    // console.log(user);
 
     // 🏪 CREATE COUNTER
     const counter = await Counter.create({
@@ -67,7 +67,7 @@ const createCounter = async (req, res) => {
       createdBy: req.user.userId,
     });
 
-    console.log(counter);
+    // console.log(counter);
     
     const populatedCounter = await Counter.findById(counter._id)
   .populate("schoolId", "schoolName");
@@ -104,7 +104,7 @@ const getCountersByBranch = async (req, res) => {
 
     const counters = await Counter.find({ branchId, status: "ACTIVE" }).populate("schoolId", "schoolName");
 
-    // console.log(counters);
+    console.log(counters);
 
     const countersWithStock = await Promise.all(
       counters.map(async (counter) => {
@@ -123,6 +123,7 @@ const getCountersByBranch = async (req, res) => {
             }
           }
         ]);
+        // console.log(counter._doc);
 
         return {
           ...counter._doc,
@@ -154,7 +155,7 @@ const updateCounter = async (req, res) => {
       { new: true }
     ).populate("schoolId", "schoolName");
 
-    console.log(updated);
+    // console.log(updated);
 
     if (!updated) {
       return res.status(404).json({ message: "Counter not found" });
@@ -175,7 +176,7 @@ const updateCounter = async (req, res) => {
 const deleteCounter = async (req, res) => {
   try {
 
-    console.log(req.params.counterId);
+    // console.log(req.params.counterId);
 
     const counter = await Counter.findOneAndUpdate(
         {

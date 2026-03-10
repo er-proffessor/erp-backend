@@ -67,8 +67,23 @@ const orderSchema = new mongoose.Schema(
   totalAmount: {
     type: Number,
     required: true
-  }
+  },
 
+  billingStatus: {
+    type: String,
+    enum: ["PAID", "DUE"],
+    default: "PAID"
+  },
+
+  paymentType: {
+    type: String,
+    enum: ["PhonePe", "GooglePay", "Paytm", "NetBanking", "Cash"],
+    default: "Cash"
+  },
+
+  utrNo: {
+    type: String
+  }
 },
 { timestamps: true }
 );

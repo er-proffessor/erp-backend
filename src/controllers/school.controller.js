@@ -8,13 +8,14 @@ const addSchool = async (req, resp) => {
             schoolName,
             schoolAddress,
             schoolOwnerMobile,
-            schoolClasses
+            schoolClasses,
+            email
         } = req.body;
 
         const branchId = req.user.branchId;
 
          const exists = await School.findOne({
-            schoolName,
+            email,
             branchId,
             status: "ACTIVE",
             });
@@ -27,6 +28,7 @@ const addSchool = async (req, resp) => {
             schoolName,
             schoolAddress,
             schoolOwnerMobile,
+            email,
             schoolClasses,
             branchId,
             createdBy: req.user.userId,
@@ -79,7 +81,7 @@ const getSchoolsByBranch = async (req, res) => {
     }).sort({createdAt: -1});
 
     // .select("_id name")
-    console.log(schools);
+    // console.log(schools);
     
    return res.status(200).json({data: schools});
 

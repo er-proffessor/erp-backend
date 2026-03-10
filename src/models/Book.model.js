@@ -47,11 +47,18 @@ const bookSchema = new mongoose.Schema(
             type: Number,
             required: true,
             default: 0
+        },
+        status: {
+            type: String,
+            enum: ["ACTIVE", "INACTIVE"],
+            default: "ACTIVE"
         }
 },
 {timestamps: true}
 
 );
+
+bookSchema.index({branchId: 1, status: 1});     // faster query by creating index
 
 module.exports = mongoose.model("Book", bookSchema);
 

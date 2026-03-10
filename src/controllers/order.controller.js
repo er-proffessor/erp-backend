@@ -100,7 +100,10 @@ const createOrder = async (req, res) => {
       mobileNo,
       className,
       buyerType,
-      books
+      books,
+      billingStatus,
+      paymentType,
+      utrNo
     } = req.body;
 
     const branchId = req.user.branchId;
@@ -153,6 +156,7 @@ const createOrder = async (req, res) => {
     });
   }
 
+
       // Check stock
       const updatedStock = await CounterStock.findOneAndUpdate(
         {
@@ -181,6 +185,15 @@ const createOrder = async (req, res) => {
         total
       });
     }
+      // Check payment status and type of payment
+
+      if (!["PAID", "DUE"].includes(billingStatus)) {
+        return res.status(400).json({ message: "Invalid billing status" });
+      }
+
+      if (!["PhonePe", "GooglePay", "Paytm", "NetBanking", "Cash"].includes(paymentType)) {
+        return res.status(400).json({ message: "Invalid payment type" });
+      }
 
     // 3️⃣ Create Order
     const order = await Order.create({
@@ -193,7 +206,10 @@ const createOrder = async (req, res) => {
       mobileNo,
       className,
       books: orderBooks,
-      totalAmount: calculatedTotal
+      totalAmount: calculatedTotal,
+      billingStatus,
+      paymentType,
+      utrNo
     });
 
     res.status(201).json(order);
@@ -294,66 +310,185 @@ const getOrdersByCounter = async (req, res) => {
 
 // Download Invoice module
 
+      // const downloadInvoice = async (req, res) => {
+      //   try {
+      //     const { orderId } = req.params;
+
+      //     const order = await Order.findById(orderId)
+      //       .populate("books.bookId", "bookName");
+
+      //     if (!order) {
+      //       return res.status(404).json({ message: "Order not found" });
+      //     }
+
+      //     const doc = new PDFDocument({ margin: 40 });
+
+      //     res.setHeader("Content-Type", "application/pdf");
+      //     res.setHeader(
+      //       "Content-Disposition",
+      //       `attachment; filename=invoice-${order._id}.pdf`
+      //     );
+
+      //     doc.pipe(res);
+
+      //     // ===== HEADER =====
+      //     doc.fontSize(20).text("N K Publication", { align: "center" });
+      //     doc.moveDown();
+      //     doc.fontSize(14).text("Invoice Receipt");
+      //     doc.moveDown();
+
+      //     doc.fontSize(12).text(`Invoice ID: ${order._id}`);
+      //     doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`);
+      //     doc.moveDown();
+
+      //     doc.text(`Student: ${order.studentName || "-"}`);
+      //     doc.text(`Father Name: ${order.fatherName || "-"}`);
+      //     doc.text(`Class: ${order.className || "-"}`);
+      //     doc.moveDown();
+
+      //     // ===== TABLE HEADER =====
+      //     doc.text("------------------------------------------------------------");
+      //     doc.text("Book Name        Qty        Price        Total");
+      //     doc.text("------------------------------------------------------------");
+
+      //     order.books.forEach(item => {
+      //       doc.text(
+      //         `${item.bookId?.bookName}    ${item.quantity}        ₹${item.price}        ₹${item.total}`
+      //       );
+      //     });
+
+      //     doc.text("------------------------------------------------------------");
+      //     doc.moveDown();
+
+      //     doc.fontSize(14).text(`Grand Total: ₹ ${order.totalAmount}`, {
+      //       align: "right"
+      //     });
+
+      //     doc.end();
+
+      //   } catch (err) {
+      //     res.status(500).json({ message: err.message });
+      //   }
+      // };
+
       const downloadInvoice = async (req, res) => {
-        try {
-          const { orderId } = req.params;
+  try {
+    const { orderId } = req.params;
 
-          const order = await Order.findById(orderId)
-            .populate("books.bookId", "bookName");
+    const order = await Order.findById(orderId)
+      .populate("books.bookId", "bookName");
 
-          if (!order) {
-            return res.status(404).json({ message: "Order not found" });
-          }
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
 
-          const doc = new PDFDocument({ margin: 40 });
+    const doc = new PDFDocument({ margin: 50 });
 
-          res.setHeader("Content-Type", "application/pdf");
-          res.setHeader(
-            "Content-Disposition",
-            `attachment; filename=invoice-${order._id}.pdf`
-          );
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=invoice-${order._id}.pdf`
+    );
 
-          doc.pipe(res);
+    doc.pipe(res);
 
-          // ===== HEADER =====
-          doc.fontSize(20).text("N K Publication", { align: "center" });
-          doc.moveDown();
-          doc.fontSize(14).text("Invoice Receipt");
-          doc.moveDown();
+    // ===== HEADER =====
+    doc
+      .fontSize(22)
+      .text("N K Publication", { align: "center" });
 
-          doc.fontSize(12).text(`Invoice ID: ${order._id}`);
-          doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`);
-          doc.moveDown();
+    doc
+      .fontSize(12)
+      .text("Educational Book Distributor", { align: "center" });
 
-          doc.text(`Student: ${order.studentName || "-"}`);
-          doc.text(`Father Name: ${order.fatherName || "-"}`);
-          doc.text(`Class: ${order.className || "-"}`);
-          doc.moveDown();
+    doc.moveDown(2);
 
-          // ===== TABLE HEADER =====
-          doc.text("------------------------------------------------------------");
-          doc.text("Book Name        Qty        Price        Total");
-          doc.text("------------------------------------------------------------");
+    // ===== INVOICE TITLE =====
+    doc
+      .fontSize(16)
+      .text("INVOICE RECEIPT", { align: "center", underline: true });
 
-          order.books.forEach(item => {
-            doc.text(
-              `${item.bookId?.bookName}    ${item.quantity}        ₹${item.price}        ₹${item.total}`
-            );
-          });
+    doc.moveDown(2);
 
-          doc.text("------------------------------------------------------------");
-          doc.moveDown();
+    // ===== INVOICE DETAILS =====
+    doc.fontSize(11);
 
-          doc.fontSize(14).text(`Grand Total: ₹ ${order.totalAmount}`, {
-            align: "right"
-          });
+    doc.text(`Invoice ID : ${order._id}`);
+    doc.text(`Date : ${new Date(order.createdAt).toLocaleDateString()}`);
+    doc.text(`Billing Status : ${order.billingStatus}`);
+    doc.moveDown();
 
-          doc.end();
+    // ===== CUSTOMER DETAILS =====
+    doc.text(`Student Name : ${order.studentName || "-"}`);
+    doc.text(`Father Name : ${order.fatherName || "-"}`);
+    doc.text(`Mobile No : ${order.mobileNo || "-"}`);
+    doc.text(`Class : ${order.className || "-"}`);
 
-        } catch (err) {
-          res.status(500).json({ message: err.message });
-        }
-      };
+    doc.moveDown();
+
+    // ===== PAYMENT DETAILS =====
+    doc.text(`Payment Type : ${order.paymentType}`);
+    doc.text(`UTR No : ${order.utrNo || "-"}`);
+
+    doc.moveDown(2);
+
+    // ===== TABLE HEADER =====
+    const tableTop = doc.y;
+
+    doc
+      .fontSize(12)
+      .text("Book Name", 50, tableTop)
+      .text("Qty", 300, tableTop)
+      .text("Price", 350, tableTop)
+      .text("Total", 420, tableTop);
+
+    doc.moveDown();
+
+    doc.text("--------------------------------------------------------------------------");
+
+    // ===== BOOK ITEMS =====
+    order.books.forEach((item, index) => {
+
+      const y = doc.y + 5;
+
+      doc
+        .fontSize(11)
+        .text(item.bookId?.bookName || "-", 50, y)
+        .text(item.quantity, 300, y)
+        .text(`Rs. ${item.price}`, 350, y)
+        .text(`Rs. ${item.total}`, 420, y);
+
+      doc.moveDown();
+    });
+
+    doc.text("--------------------------------------------------------------------------");
+
+    doc.moveDown(2);
+
+    // ===== GRAND TOTAL =====
+    doc
+      .fontSize(14)
+      .text(`Grand Total : Rs. ${order.totalAmount}`, {
+        align: "right"
+      });
+
+    doc.moveDown(3);
+
+    // ===== FOOTER =====
+    doc
+      .fontSize(11)
+      .text("Thank you for your purchase!", { align: "center" });
+
+    doc
+      .fontSize(10)
+      .text("N K Publication", { align: "center" });
+
+    doc.end();
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
 
 module.exports = { createOrder, getAvailableBooksAtCounter, getOrdersByCounter, downloadInvoice };
