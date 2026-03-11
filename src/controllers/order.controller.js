@@ -308,6 +308,39 @@ const getOrdersByCounter = async (req, res) => {
   }
 };
 
+
+const updatePaymentStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { billingStatus } = req.body;
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // allow only DUE → PAID
+    if (order.billingStatus === "PAID") {
+      return res.status(400).json({
+        message: "Payment already completed"
+      });
+    }
+
+    order.billingStatus = billingStatus;
+
+    await order.save();
+
+    res.json({
+      success: true,
+      message: "Payment status updated"
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // Download Invoice module
 
       // const downloadInvoice = async (req, res) => {
@@ -416,12 +449,14 @@ const getOrdersByCounter = async (req, res) => {
 //     doc.text(`Invoice ID : ${order._id}`);
 //     doc.text(`Date : ${new Date(order.createdAt).toLocaleDateString()}`);
 //     doc.text(`Billing Status : ${order.billingStatus}`);
-//     doc.moveDown();
+//  doc.text(`Billing Status : ${order.status || "PAID"}`);
+  //  doc.moveDown();
 
 //     // ===== CUSTOMER DETAILS =====
 //     doc.text(`Student Name : ${order.studentName || "-"}`);
 //     doc.text(`Father Name : ${order.fatherName || "-"}`);
 //     doc.text(`Mobile No : ${order.mobileNo || "-"}`);
+      // doc.text(`Mobile No : ${order.mobile || "-"}`);
 //     doc.text(`Class : ${order.className || "-"}`);
 
 //     doc.moveDown();
@@ -429,6 +464,8 @@ const getOrdersByCounter = async (req, res) => {
 //     // ===== PAYMENT DETAILS =====
 //     doc.text(`Payment Type : ${order.paymentType}`);
 //     doc.text(`UTR No : ${order.utrNo || "-"}`);
+    //   doc.text(`Payment Type : ${order.paymentMethod || "-"}`);
+    // doc.text(`UTR No : ${order.utrNumber || "-"}`);
 
 //     doc.moveDown(2);
 
@@ -539,19 +576,19 @@ const downloadInvoice = async (req, res) => {
 
     doc.text(`Invoice ID : ${order._id}`);
     doc.text(`Date : ${new Date(order.createdAt).toLocaleDateString()}`);
-    doc.text(`Billing Status : ${order.status || "PAID"}`);
+    doc.text(`Billing Status : ${order.billingStatus || "PAID"}`);
 
     doc.moveDown();
 
     doc.text(`Student Name : ${order.studentName}`);
     doc.text(`Father Name : ${order.fatherName}`);
-    doc.text(`Mobile No : ${order.mobile || "-"}`);
+    doc.text(`Mobile No : ${order.mobileNo || "-"}`);
     doc.text(`Class : ${order.className}`);
 
     doc.moveDown();
 
-    doc.text(`Payment Type : ${order.paymentMethod || "-"}`);
-    doc.text(`UTR No : ${order.utrNumber || "-"}`);
+    doc.text(`Payment Type : ${order.paymentType || "-"}`);
+    doc.text(`UTR No : ${order.utrNo || "-"}`);
 
     doc.moveDown(2);
 
@@ -627,4 +664,4 @@ const downloadInvoice = async (req, res) => {
   }
 };
 
-module.exports = { createOrder, getAvailableBooksAtCounter, getOrdersByCounter, downloadInvoice };
+module.exports = { createOrder, getAvailableBooksAtCounter, getOrdersByCounter, updatePaymentStatus, downloadInvoice };

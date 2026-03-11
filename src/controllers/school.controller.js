@@ -24,6 +24,33 @@ const addSchool = async (req, resp) => {
                  return resp.status(400).json({ message: "School already exists" });
                 }
 
+          // Check Mobile No. unique
+            const mobileExists = await School.findOne({
+                schoolOwnerMobile,
+                branchId,
+                status: "ACTIVE"
+              });
+
+              if (mobileExists) {
+                return resp.status(400).json({
+                  message: "Mobile number already used by another school"
+                });
+              }
+
+              // Check E-Mail Id Unique
+                const emailExists = await School.findOne({
+                  email,
+                  branchId,
+                  status: "ACTIVE"
+                });
+
+                if (emailExists) {
+                  return resp.status(400).json({
+                    message: "Email already used by another school"
+                  });
+                }
+
+       // Create New School         
         const school = await School.create({
             schoolName,
             schoolAddress,

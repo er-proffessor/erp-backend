@@ -12,7 +12,7 @@ const createCounter = async (req, res) => {
     const branchId = req.user.branchId;
 
     
-
+    // check Counter name
     const exists = await Counter.findOne({ 
         name, 
         schoolId, 
@@ -20,10 +20,18 @@ const createCounter = async (req, res) => {
         status: "ACTIVE"
     });
 
-    // console.log(exists);
-
     if (exists) {
       return res.status(400).json({ message: "Counter already exists" });
+    }
+
+    // Check Mobile No. unique 
+    const mobileExists = await Counter.findOne({ 
+      mobileNo,
+      branchId
+     });
+
+    if (mobileExists) {
+      return res.status(400).json({ message: "Mobile number already used by another counter" });
     }
 
     // 🔐 CHECK USER EMAIL (not counter)
@@ -31,6 +39,14 @@ const createCounter = async (req, res) => {
     if (userExists) {
       return res.status(400).json({ message: "Email already used" });
     }
+
+    // Check Counter Email    
+    const counterEmailExists = await Counter.findOne({ email });
+
+    if(counterEmailExists){
+      return res.status(400).json({ message: "Counter email already used" });
+    }
+
 
     // 🔐 CREATE LOGIN USER
     
@@ -40,20 +56,13 @@ const createCounter = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
-    const counterEmailExists = await Counter.findOne({ email });
-
-    if(counterEmailExists){
-      return res.status(400).json({ message: "Counter email already used" });
-    }
-
+    // Create User
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
       role: "COUNTER"
     });
-
-    // console.log(user);
 
     // 🏪 CREATE COUNTER
     const counter = await Counter.create({
