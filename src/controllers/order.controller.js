@@ -527,7 +527,463 @@ const updatePaymentStatus = async (req, res) => {
 //   }
 // };
 
-const downloadInvoice = async (req, res) => {
+// const downloadInvoice = async (req, res) => {
+//   try {
+//     const { orderId } = req.params;
+
+//     const order = await Order.findById(orderId)
+//       .populate("books.bookId", "bookName");
+
+//     if (!order) {
+//       return res.status(404).json({ message: "Order not found" });
+//     }
+
+//     const doc = new PDFDocument({ margin: 50 });
+
+//     res.setHeader("Content-Type", "application/pdf");
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename=invoice-${order._id}.pdf`
+//     );
+
+//     doc.pipe(res);
+
+//     /* =============================
+//         HEADER
+//     ============================== */
+
+//     doc
+//       .fontSize(22)
+//       .text("N K Publication", { align: "center" });
+
+//     doc
+//       .fontSize(11)
+//       .text("Educational Book Distributor", { align: "center" });
+
+//     doc.moveDown();
+
+//     doc
+//       .fontSize(16)
+//       .text("INVOICE RECEIPT", { align: "center", underline: true });
+
+//     doc.moveDown(2);
+
+//     /* =============================
+//         INVOICE INFO
+//     ============================== */
+
+//     doc.fontSize(11);
+
+//     doc.text(`Invoice ID : ${order._id}`);
+//     doc.text(`Date : ${new Date(order.createdAt).toLocaleDateString()}`);
+//     doc.text(`Billing Status : ${order.billingStatus || "PAID"}`);
+
+//     doc.moveDown();
+
+//     doc.text(`Student Name : ${order.studentName}`);
+//     doc.text(`Father Name : ${order.fatherName}`);
+//     doc.text(`Mobile No : ${order.mobileNo || "-"}`);
+//     doc.text(`Class : ${order.className}`);
+
+//     doc.moveDown();
+
+//     doc.text(`Payment Type : ${order.paymentType || "-"}`);
+//     doc.text(`UTR No : ${order.utrNo || "-"}`);
+
+//     doc.moveDown(2);
+
+//     /* =============================
+//         TABLE HEADER
+//     ============================== */
+
+//     const tableTop = doc.y;
+
+//     const itemX = 50;
+//     const qtyX = 350;
+//     const priceX = 420;
+//     const totalX = 500;
+
+//     doc
+//       .fontSize(12)
+//       .text("Book Name", itemX, tableTop)
+//       .text("Qty", qtyX, tableTop)
+//       .text("Price", priceX, tableTop)
+//       .text("Total", totalX, tableTop);
+
+//     doc.moveTo(50, tableTop + 15)
+//       .lineTo(550, tableTop + 15)
+//       .stroke();
+
+//     /* =============================
+//         TABLE ROWS
+//     ============================== */
+
+//     let y = tableTop + 30;
+
+//     order.books.forEach((item) => {
+//       doc
+//         .fontSize(11)
+//         .text(item.bookId?.bookName || "-", itemX, y)
+//         .text(item.quantity, qtyX, y)
+//         .text(`Rs. ${item.price}`, priceX, y)
+//         .text(`Rs. ${item.total}`, totalX, y);
+
+//       y += 20;
+//     });
+
+//     /* =============================
+//         TOTAL SECTION
+//     ============================== */
+
+//     doc.moveTo(350, y + 10)
+//       .lineTo(550, y + 10)
+//       .stroke();
+
+//     doc
+//       .fontSize(13)
+//       .text(`Grand Total : Rs. ${order.totalAmount}`, 350, y + 20);
+
+//     /* =============================
+//         FOOTER
+//     ============================== */
+
+//     doc.moveDown(4);
+
+//     doc
+//       .fontSize(10)
+//       .text("Thank you for your purchase!", { align: "center" });
+
+//     doc
+//       .fontSize(9)
+//       .text("This is a computer generated receipt.", { align: "center" });
+
+//     doc.end();
+
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+
+// const PDFDocument = require("pdfkit");
+
+// const downloadInvoice = async (req, res) => {
+//   try {
+//     const { orderId } = req.params;
+
+//     const order = await Order.findById(orderId)
+//       .populate("books.bookId", "bookName");
+
+//     if (!order) {
+//       return res.status(404).json({ message: "Order not found" });
+//     }
+
+//     const doc = new PDFDocument({ margin: 40 });
+
+//     res.setHeader("Content-Type", "application/pdf");
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename=invoice-${order._id}.pdf`
+//     );
+
+//     doc.pipe(res);
+
+//     /* =============================
+//        HEADER (School Style)
+//     ============================== */
+
+//     doc
+//       .fontSize(16)
+//       .text("N K PUBLICATION", { align: "center", bold: true });
+
+//     doc
+//       .fontSize(10)
+//       .text("Educational Book Distributor", { align: "center" });
+
+//     doc
+//       .fontSize(10)
+//       .text("Phone: 9876543210 | Email: nkpublication@gmail.com", {
+//         align: "center",
+//       });
+
+//     doc.moveDown(1);
+
+//     doc
+//       .fontSize(14)
+//       .text("Student Invoice", { align: "center", underline: true });
+
+//     doc.moveDown(2);
+
+//     /* =============================
+//        STUDENT + INVOICE INFO
+//     ============================== */
+
+//     const infoTop = doc.y;
+
+//     // LEFT SIDE
+//     doc.fontSize(10);
+//     doc.text(`Invoice No : ${order._id}`, 50, infoTop);
+//     doc.text(`Name : ${order.studentName}`, 50, infoTop + 15);
+//     doc.text(`Father Name : ${order.fatherName}`, 50, infoTop + 30);
+
+//     // RIGHT SIDE
+//     doc.text(
+//       `Date : ${new Date(order.createdAt).toLocaleDateString()}`,
+//       350,
+//       infoTop
+//     );
+//     doc.text(`Class : ${order.className}`, 350, infoTop + 15);
+//     doc.text(`Mobile : ${order.mobileNo || "-"}`, 350, infoTop + 30);
+
+//     doc.moveDown(3);
+
+//     /* =============================
+//        TABLE
+//     ============================== */
+
+//     const tableTop = doc.y;
+
+//     const col1 = 50;   // S.no
+//     const col2 = 90;   // Particular
+//     const col3 = 350;  // Qty
+//     const col4 = 420;  // Rate
+//     const col5 = 500;  // Amount
+
+//     doc.fontSize(10).text("S.no", col1, tableTop);
+//     doc.text("Particular", col2, tableTop);
+//     doc.text("Qty", col3, tableTop);
+//     doc.text("Rate", col4, tableTop);
+//     doc.text("Amount", col5, tableTop);
+
+//     doc.moveTo(50, tableTop + 12)
+//       .lineTo(550, tableTop + 12)
+//       .stroke();
+
+//     let y = tableTop + 20;
+
+//     /* =============================
+//        TABLE ROWS
+//     ============================== */
+
+//     order.books.forEach((item, index) => {
+
+//       doc.text(index + 1, col1, y);
+//       doc.text(item.bookId?.bookName || "-", col2, y);
+//       doc.text(item.quantity, col3, y);
+//       doc.text(item.price.toFixed(2), col4, y);
+//       doc.text(item.total.toFixed(2), col5, y);
+
+//       y += 18;
+//     });
+
+//     /* =============================
+//        TOTAL SECTION
+//     ============================== */
+
+//     doc.moveTo(350, y + 5)
+//       .lineTo(550, y + 5)
+//       .stroke();
+
+//     doc
+//       .fontSize(11)
+//       .text(`Grand Total : Rs. ${order.totalAmount}`, 420, y + 15);
+
+//     doc.moveDown(3);
+
+//     /* =============================
+//        FOOTER
+//     ============================== */
+
+//     doc
+//       .fontSize(9)
+//       .text("Thank you for your purchase.", { align: "center" });
+
+//     doc
+//       .text("This is a computer generated invoice.", {
+//         align: "center",
+//       });
+
+//     doc.end();
+
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+
+// const PDFDocument = require("pdfkit");
+// const path = require("path");
+
+// const downloadInvoice = async (req, res) => {
+//   try {
+
+//     const { orderId } = req.params;
+
+//     const order = await Order.findById(orderId)
+//       .populate("books.bookId", "bookName");
+
+//     if (!order) {
+//       return res.status(404).json({ message: "Order not found" });
+//     }
+
+//     const doc = new PDFDocument({ margin: 40, size: "A4" });
+
+//     res.setHeader("Content-Type", "application/pdf");
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename=invoice-${order._id}.pdf`
+//     );
+
+//     doc.pipe(res);
+
+//     /* ==============================
+//        HEADER SECTION
+//     ============================== */
+
+//     // Optional logo
+//     // const logo = path.join(__dirname, "../public/logo.png");
+//     // doc.image(logo, 40, 40, { width: 60 });
+
+//     doc
+//       .fontSize(18)
+//       .text("N K PUBLICATION", 0, 40, { align: "center" });
+
+//     doc
+//       .fontSize(10)
+//       .text("Educational Book Distributor", { align: "center" });
+
+//     doc
+//       .fontSize(9)
+//       .text("Jaipur, Rajasthan | Phone: 9876543210", { align: "center" });
+
+//     doc.moveDown(2);
+
+//     /* ==============================
+//        INVOICE TITLE
+//     ============================== */
+
+//     doc
+//       .fontSize(16)
+//       .text("INVOICE", { align: "center", underline: true });
+
+//     doc.moveDown(2);
+
+//     /* ==============================
+//        CUSTOMER + INVOICE INFO
+//     ============================== */
+
+//     const startY = doc.y;
+
+//     // LEFT
+//     doc.fontSize(10);
+//     doc.text(`Student Name : ${order.studentName}`, 50, startY);
+//     doc.text(`Father Name  : ${order.fatherName}`, 50, startY + 15);
+//     doc.text(`Class        : ${order.className}`, 50, startY + 30);
+//     doc.text(`Mobile       : ${order.mobileNo || "-"}`, 50, startY + 45);
+
+//     // RIGHT
+//     doc.text(`Invoice No : ${order._id}`, 350, startY);
+//     doc.text(
+//       `Date       : ${new Date(order.createdAt).toLocaleDateString()}`,
+//       350,
+//       startY + 15
+//     );
+//     doc.text(`Payment    : ${order.paymentType}`, 350, startY + 30);
+//     doc.text(`Status     : ${order.billingStatus || "PAID"}`, 350, startY + 45);
+
+//     doc.moveDown(4);
+
+//     /* ==============================
+//        TABLE
+//     ============================== */
+
+//     const tableTop = doc.y;
+
+//     const col1 = 50;
+//     const col2 = 90;
+//     const col3 = 350;
+//     const col4 = 420;
+//     const col5 = 500;
+
+//     // Table Header Background
+//     doc.rect(50, tableTop - 5, 500, 20).stroke();
+
+//     doc.fontSize(10);
+
+//     doc.text("S.No", col1, tableTop);
+//     doc.text("Particular", col2, tableTop);
+//     doc.text("Qty", col3, tableTop);
+//     doc.text("Rate", col4, tableTop);
+//     doc.text("Amount", col5, tableTop);
+
+//     let y = tableTop + 20;
+
+//     /* ==============================
+//        TABLE ROWS
+//     ============================== */
+
+//     order.books.forEach((item, index) => {
+
+//       doc.text(index + 1, col1, y);
+//       doc.text(item.bookId?.bookName || "-", col2, y);
+//       doc.text(item.quantity, col3, y);
+//       doc.text(item.price.toFixed(2), col4, y);
+//       doc.text(item.total.toFixed(2), col5, y);
+
+//       y += 18;
+
+//       doc.moveTo(50, y)
+//         .lineTo(550, y)
+//         .stroke();
+//     });
+
+//     /* ==============================
+//        TOTAL BOX
+//     ============================== */
+
+//     y += 10;
+
+//     doc.rect(350, y, 200, 30).stroke();
+
+//     doc
+//       .fontSize(12)
+//       .text(`Grand Total : Rs. ${order.totalAmount}`, 370, y + 10);
+
+//     doc.moveDown(4);
+
+//     /* ==============================
+//        SIGNATURE
+//     ============================== */
+
+//     doc.text("Authorized Signature", 420, doc.y + 20);
+
+//     doc.moveTo(400, doc.y + 35)
+//       .lineTo(550, doc.y + 35)
+//       .stroke();
+
+//     doc.moveDown(4);
+
+//     /* ==============================
+//        FOOTER
+//     ============================== */
+
+//     doc
+//       .fontSize(9)
+//       .text("Thank you for your purchase!", { align: "center" });
+
+//     doc
+//       .text("This is a computer generated invoice.", { align: "center" });
+
+//     doc.end();
+
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+// const PDFDocument = require("pdfkit");
+
+  const downloadInvoice = async (req, res) => {
   try {
     const { orderId } = req.params;
 
@@ -538,7 +994,7 @@ const downloadInvoice = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 40 });
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
@@ -549,113 +1005,143 @@ const downloadInvoice = async (req, res) => {
     doc.pipe(res);
 
     /* =============================
-        HEADER
+       HEADER
     ============================== */
-
-    doc
-      .fontSize(22)
-      .text("N K Publication", { align: "center" });
-
-    doc
-      .fontSize(11)
-      .text("Educational Book Distributor", { align: "center" });
-
-    doc.moveDown();
 
     doc
       .fontSize(16)
-      .text("INVOICE RECEIPT", { align: "center", underline: true });
-
-    doc.moveDown(2);
-
-    /* =============================
-        INVOICE INFO
-    ============================== */
-
-    doc.fontSize(11);
-
-    doc.text(`Invoice ID : ${order._id}`);
-    doc.text(`Date : ${new Date(order.createdAt).toLocaleDateString()}`);
-    doc.text(`Billing Status : ${order.billingStatus || "PAID"}`);
-
-    doc.moveDown();
-
-    doc.text(`Student Name : ${order.studentName}`);
-    doc.text(`Father Name : ${order.fatherName}`);
-    doc.text(`Mobile No : ${order.mobileNo || "-"}`);
-    doc.text(`Class : ${order.className}`);
-
-    doc.moveDown();
-
-    doc.text(`Payment Type : ${order.paymentType || "-"}`);
-    doc.text(`UTR No : ${order.utrNo || "-"}`);
-
-    doc.moveDown(2);
-
-    /* =============================
-        TABLE HEADER
-    ============================== */
-
-    const tableTop = doc.y;
-
-    const itemX = 50;
-    const qtyX = 350;
-    const priceX = 420;
-    const totalX = 500;
-
-    doc
-      .fontSize(12)
-      .text("Book Name", itemX, tableTop)
-      .text("Qty", qtyX, tableTop)
-      .text("Price", priceX, tableTop)
-      .text("Total", totalX, tableTop);
-
-    doc.moveTo(50, tableTop + 15)
-      .lineTo(550, tableTop + 15)
-      .stroke();
-
-    /* =============================
-        TABLE ROWS
-    ============================== */
-
-    let y = tableTop + 30;
-
-    order.books.forEach((item) => {
-      doc
-        .fontSize(11)
-        .text(item.bookId?.bookName || "-", itemX, y)
-        .text(item.quantity, qtyX, y)
-        .text(`Rs. ${item.price}`, priceX, y)
-        .text(`Rs. ${item.total}`, totalX, y);
-
-      y += 20;
-    });
-
-    /* =============================
-        TOTAL SECTION
-    ============================== */
-
-    doc.moveTo(350, y + 10)
-      .lineTo(550, y + 10)
-      .stroke();
-
-    doc
-      .fontSize(13)
-      .text(`Grand Total : Rs. ${order.totalAmount}`, 350, y + 20);
-
-    /* =============================
-        FOOTER
-    ============================== */
-
-    doc.moveDown(4);
+      .text("N K PUBLICATION", { align: "center" });
 
     doc
       .fontSize(10)
-      .text("Thank you for your purchase!", { align: "center" });
+      .text("Educational Book Distributor", { align: "center" });
+
+    doc
+      .fontSize(10)
+      .text("Phone: 9876543210 | Email: nkpublication@gmail.com", {
+        align: "center",
+      });
+
+    doc.moveDown(1);
+
+    doc
+      .fontSize(14)
+      .text("Student Invoice", { align: "center", underline: true });
+
+    doc.moveDown(2);
+
+    /* =============================
+       STUDENT + INVOICE INFO
+    ============================== */
+
+    const infoTop = doc.y;
+
+    // LEFT SIDE
+    doc.fontSize(10);
+    doc.text(`Invoice No : ${order._id}`, 50, infoTop);
+    doc.text(`Name : ${order.studentName}`, 50, infoTop + 15);
+    doc.text(`Father Name : ${order.fatherName}`, 50, infoTop + 30);
+
+    // RIGHT SIDE
+    doc.text(
+      `Date : ${new Date(order.createdAt).toLocaleDateString()}`,
+      350,
+      infoTop
+    );
+    doc.text(`Class : ${order.className}`, 350, infoTop + 15);
+    doc.text(`Mobile : ${order.mobileNo || "-"}`, 350, infoTop + 30);
+
+    /* =============================
+       PAYMENT INFO
+    ============================== */
+
+    const paymentTop = infoTop + 70;
+
+    doc.text(
+      `Billing Status : ${order.billingStatus || "PAID"}`,
+      50,
+      paymentTop
+    );
+
+    doc.text(
+      `Payment Type : ${order.paymentType || "-"}`,
+      250,
+      paymentTop
+    );
+
+    doc.text(
+      `UTR No : ${order.utrNo || "-"}`,
+      420,
+      paymentTop
+    );
+
+    doc.moveDown(4);
+
+    /* =============================
+       TABLE
+    ============================== */
+
+    const tableTop = paymentTop + 30;
+
+    const col1 = 50;   // S.no
+    const col2 = 90;   // Particular
+    const col3 = 350;  // Qty
+    const col4 = 420;  // Rate
+    const col5 = 500;  // Amount
+
+    doc.fontSize(10).text("S.no", col1, tableTop);
+    doc.text("Particular", col2, tableTop);
+    doc.text("Qty", col3, tableTop);
+    doc.text("Rate", col4, tableTop);
+    doc.text("Amount", col5, tableTop);
+
+    doc.moveTo(50, tableTop + 12)
+      .lineTo(550, tableTop + 12)
+      .stroke();
+
+    let y = tableTop + 20;
+
+    /* =============================
+       TABLE ROWS
+    ============================== */
+
+    order.books.forEach((item, index) => {
+
+      doc.text(index + 1, col1, y);
+      doc.text(item.bookId?.bookName || "-", col2, y);
+      doc.text(item.quantity, col3, y);
+      doc.text(item.price.toFixed(2), col4, y);
+      doc.text(item.total.toFixed(2), col5, y);
+
+      y += 18;
+    });
+
+    /* =============================
+       TOTAL SECTION
+    ============================== */
+
+    doc.moveTo(350, y + 5)
+      .lineTo(550, y + 5)
+      .stroke();
+
+    doc
+      .fontSize(11)
+      .text(`Grand Total : Rs. ${order.totalAmount}`, 420, y + 15);
+
+    doc.moveDown(3);
+
+    /* =============================
+       FOOTER
+    ============================== */
 
     doc
       .fontSize(9)
-      .text("This is a computer generated receipt.", { align: "center" });
+      .text("Thank you for your purchase.", { align: "center" });
+
+    doc
+      .text("This is a computer generated invoice.", {
+        align: "center",
+      });
 
     doc.end();
 
@@ -663,5 +1149,6 @@ const downloadInvoice = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 module.exports = { createOrder, getAvailableBooksAtCounter, getOrdersByCounter, updatePaymentStatus, downloadInvoice };
