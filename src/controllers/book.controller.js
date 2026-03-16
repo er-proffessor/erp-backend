@@ -113,4 +113,27 @@ const createBook = async (req, resp) => {
                 }
                 };
 
-module.exports = {createBook, getBooksByBranch, updateBook, deleteBook};
+
+    // Get Books By Class
+    const getBooksByClass = async (req, res) => {
+    
+      try {
+    
+        const { className } = req.params;
+        const branchId = req.user.branchId;
+    
+        const books = await Book.find({
+          branchId,
+          className,
+          status: "ACTIVE"
+        });
+    
+        res.json(books);
+    
+      } catch (err) {
+        res.status(500).json({ message: err.message });
+      }
+    
+    };
+    
+module.exports = {createBook, getBooksByBranch, updateBook, deleteBook, getBooksByClass};

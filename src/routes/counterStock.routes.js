@@ -3,7 +3,7 @@ const authMiddleware = require("../middleware/auth.middleware");
 
 const {
   assignStockToCounter,
-  getStockByCounter,
+  getStockByCounter
 } = require("../controllers/counterStock.controller");
 
 const router = express.Router();

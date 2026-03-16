@@ -983,12 +983,192 @@ const updatePaymentStatus = async (req, res) => {
 
 // const PDFDocument = require("pdfkit");
 
-  const downloadInvoice = async (req, res) => {
+//   const downloadInvoice = async (req, res) => {
+//   try {
+//     const { orderId } = req.params;
+
+//     const order = await Order.findById(orderId)
+//       .populate("books.bookId", "bookName").populate("counterId", "name email mobileNo");
+
+//     if (!order) {
+//       return res.status(404).json({ message: "Order not found" });
+//     }
+
+//     const doc = new PDFDocument({ margin: 40 });
+
+//     res.setHeader("Content-Type", "application/pdf");
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename=invoice-${order._id}.pdf`
+//     );
+
+//     doc.pipe(res);
+
+//    
+//     /* =============================
+//        HEADER
+//     ============================== */
+
+//     doc
+//       .fontSize(16)
+//       .text(order.counterId?.name || "N K PUBLICATION", { align: "center" });
+
+//     doc
+//       .fontSize(10)
+//       .text("Educational Book Distributor", { align: "center" });
+
+//     doc
+//       .fontSize(10)
+//       .text(`Phone No.: ${order.counterId?.mobileNo}  | Email: ${order.counterId?.email}` || "Phone: 0000000000  | Email: ", {align: "center",});
+
+//     doc.moveDown(1);
+
+//     doc
+//       .fontSize(14)
+//       .text("Student Invoice", { align: "center", underline: true });
+
+//     doc.moveDown(2);
+
+//     /* =============================
+//        STUDENT + INVOICE INFO
+//     ============================== */
+
+//     const infoTop = doc.y;
+
+//     // LEFT SIDE
+//     doc.fontSize(10);
+//     doc.text(`Invoice No : ${order._id}`, 50, infoTop);
+//     doc.text(`Name : ${order.studentName}`, 50, infoTop + 15);
+//     doc.text(`Father Name : ${order.fatherName}`, 50, infoTop + 30);
+
+//     // RIGHT SIDE
+//     doc.text(
+//       `Date : ${new Date(order.createdAt).toLocaleDateString()}`,
+//       350,
+//       infoTop
+//     );
+//     doc.text(`Class : ${order.className}`, 350, infoTop + 15);
+//     doc.text(`Mobile : ${order.mobileNo || "-"}`, 350, infoTop + 30);
+
+//     /* =============================
+//        PAYMENT INFO
+//     ============================== */
+
+//     const paymentTop = infoTop + 70;
+
+//     doc.text(
+//       `Billing Status : ${order.billingStatus || "PAID"}`,
+//       50,
+//       paymentTop
+//     );
+
+//     doc.text(
+//       `Payment Type : ${order.paymentType || "-"}`,
+//       250,
+//       paymentTop
+//     );
+
+//     doc.text(
+//       `UTR No : ${order.utrNo || "-"}`,
+//       420,
+//       paymentTop
+//     );
+
+//     doc.moveDown(4);
+
+//     /* =============================
+//        TABLE
+//     ============================== */
+
+//     const tableTop = paymentTop + 30;
+
+//     const col1 = 50;   // S.no
+//     const col2 = 90;   // Particular
+//     const col3 = 350;  // Qty
+//     const col4 = 420;  // Rate
+//     const col5 = 500;  // Amount
+
+//     doc.fontSize(10).text("S.no", col1, tableTop);
+//     doc.text("Particular", col2, tableTop);
+//     doc.text("Qty", col3, tableTop);
+//     doc.text("Rate", col4, tableTop);
+//     doc.text("Amount", col5, tableTop);
+
+//     // doc.moveTo(50, tableTop + 12)
+//     //   .lineTo(550, tableTop + 12)
+//     //   .stroke();
+
+//     let y = tableTop + 20;
+
+//     /* =============================
+//        TABLE ROWS
+//     ============================== */
+
+//     order.books.forEach((item, index) => {
+
+//       doc.text(index + 1, col1, y);
+//       doc.text(item.bookId?.bookName || "-", col2, y);
+//       doc.text(item.quantity, col3, y);
+//       doc.text(item.price.toFixed(2), col4, y);
+//       doc.text(item.total.toFixed(2), col5, y);
+
+//       y += 18;
+//     });
+
+//     /* =============================
+//        TOTAL SECTION
+//     ============================== */
+
+//     doc.moveTo(350, y + 5)
+//       .lineTo(550, y + 5)
+//       .stroke();
+
+//     doc
+//       .fontSize(11)
+//       .text(`Grand Total : Rs. ${order.totalAmount}`, 420, y + 15);
+
+//     doc.moveDown(3);
+
+//     /* =============================
+//        FOOTER
+//     ============================== */
+
+//     doc.moveDown(3);
+// doc.x = 50;
+
+// doc
+//   .fontSize(9)
+//   .text("Thank you for your purchase.", {
+//     align: "center",
+//     width: 500
+//   });
+
+// doc
+//   .text("This is a computer generated invoice.", {
+//     align: "center",
+//     width: 500
+//   });
+
+//     doc.end();
+
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+
+
+
+// const PDFDocument = require("pdfkit");
+// const Order = require("../models/Order");
+
+const downloadInvoice = async (req, res) => {
   try {
     const { orderId } = req.params;
 
     const order = await Order.findById(orderId)
-      .populate("books.bookId", "bookName");
+      .populate("books.bookId", "bookName")
+      .populate("counterId", "name phone email");
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
@@ -1010,7 +1190,9 @@ const updatePaymentStatus = async (req, res) => {
 
     doc
       .fontSize(16)
-      .text("N K PUBLICATION", { align: "center" });
+      .text(order.counterId?.name || "N K PUBLICATION", {
+        align: "center",
+      });
 
     doc
       .fontSize(10)
@@ -1018,9 +1200,12 @@ const updatePaymentStatus = async (req, res) => {
 
     doc
       .fontSize(10)
-      .text("Phone: 9876543210 | Email: nkpublication@gmail.com", {
-        align: "center",
-      });
+      .text(
+        `Phone: ${order.counterId?.phone || "-"} | Email: ${
+          order.counterId?.email || "-"
+        }`,
+        { align: "center" }
+      );
 
     doc.moveDown(1);
 
@@ -1075,29 +1260,36 @@ const updatePaymentStatus = async (req, res) => {
       paymentTop
     );
 
-    doc.moveDown(4);
-
     /* =============================
        TABLE
     ============================== */
 
-    const tableTop = paymentTop + 30;
+    const tableTop = paymentTop + 40;
 
-    const col1 = 50;   // S.no
-    const col2 = 90;   // Particular
-    const col3 = 350;  // Qty
-    const col4 = 420;  // Rate
-    const col5 = 500;  // Amount
+    const col1 = 55;
+    const col2 = 90;
+    const col3 = 350;
+    const col4 = 420;
+    const col5 = 490;
 
-    doc.fontSize(10).text("S.no", col1, tableTop);
+    const tableWidth = 500;
+    const rowHeight = 20;
+
+    // HEADER TEXT
+    doc.fontSize(10).text("S.No", col1, tableTop);
     doc.text("Particular", col2, tableTop);
     doc.text("Qty", col3, tableTop);
     doc.text("Rate", col4, tableTop);
     doc.text("Amount", col5, tableTop);
 
-    doc.moveTo(50, tableTop + 12)
-      .lineTo(550, tableTop + 12)
-      .stroke();
+    // HEADER BORDER
+    doc.rect(50, tableTop - 5, tableWidth, rowHeight).stroke();
+
+    // HEADER COLUMN LINES
+    doc.moveTo(col2 - 10, tableTop - 5).lineTo(col2 - 10, tableTop + 15).stroke();
+    doc.moveTo(col3 - 10, tableTop - 5).lineTo(col3 - 10, tableTop + 15).stroke();
+    doc.moveTo(col4 - 10, tableTop - 5).lineTo(col4 - 10, tableTop + 15).stroke();
+    doc.moveTo(col5 - 10, tableTop - 5).lineTo(col5 - 10, tableTop + 15).stroke();
 
     let y = tableTop + 20;
 
@@ -1107,40 +1299,65 @@ const updatePaymentStatus = async (req, res) => {
 
     order.books.forEach((item, index) => {
 
-      doc.text(index + 1, col1, y);
-      doc.text(item.bookId?.bookName || "-", col2, y);
-      doc.text(item.quantity, col3, y);
-      doc.text(item.price.toFixed(2), col4, y);
-      doc.text(item.total.toFixed(2), col5, y);
+      // ROW BORDER
+      doc.rect(50, y - 5, tableWidth, rowHeight).stroke();
 
-      y += 18;
+      doc.text(index + 1, col1, y);
+
+      doc.text(item.bookId?.bookName || "-", col2, y);
+
+      doc.text(item.quantity, col3, y, {
+        width: 40,
+        align: "center",
+      });
+
+      doc.text(item.price.toFixed(2), col4, y, {
+        width: 50,
+        align: "right",
+      });
+
+      doc.text(item.total.toFixed(2), col5, y, {
+        width: 60,
+        align: "right",
+      });
+
+      // COLUMN LINES
+      doc.moveTo(col2 - 10, y - 5).lineTo(col2 - 10, y + 15).stroke();
+      doc.moveTo(col3 - 10, y - 5).lineTo(col3 - 10, y + 15).stroke();
+      doc.moveTo(col4 - 10, y - 5).lineTo(col4 - 10, y + 15).stroke();
+      doc.moveTo(col5 - 10, y - 5).lineTo(col5 - 10, y + 15).stroke();
+
+      y += rowHeight;
     });
 
     /* =============================
        TOTAL SECTION
     ============================== */
 
-    doc.moveTo(350, y + 5)
-      .lineTo(550, y + 5)
-      .stroke();
+    doc.moveTo(350, y + 5).lineTo(550, y + 5).stroke();
 
     doc
       .fontSize(11)
       .text(`Grand Total : Rs. ${order.totalAmount}`, 420, y + 15);
 
-    doc.moveDown(3);
-
     /* =============================
        FOOTER
     ============================== */
 
+    doc.moveDown(3);
+    doc.x = 50;
+
     doc
       .fontSize(9)
-      .text("Thank you for your purchase.", { align: "center" });
+      .text("Thank you for your purchase.", {
+        align: "center",
+        width: 500,
+      });
 
     doc
       .text("This is a computer generated invoice.", {
         align: "center",
+        width: 500,
       });
 
     doc.end();

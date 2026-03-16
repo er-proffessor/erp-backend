@@ -141,6 +141,7 @@ const getCountersByBranch = async (req, res) => {
         };
       })
     );
+        // console.log(totalBooksAssigned);
 
     res.json(countersWithStock);
 
