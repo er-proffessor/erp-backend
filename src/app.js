@@ -8,6 +8,7 @@ const booksRoutes = require("./routes/book.routes");
 const counterRoutes = require("./routes/counter.routes");
 const counterStockRoutes = require("./routes/counterStock.routes");
 const orderRoutes = require("./routes/order.routes");
+const dashboardRoutes = require("./routes/dashboard.routes");
 
 const app = express();
 
@@ -32,6 +33,8 @@ app.use("/api/orders", orderRoutes); //  Orders routes access
 
 
 app.use("/api/counter-stock", counterStockRoutes);  // Counter Stock Access
+
+app.use("/api/dashboard", dashboardRoutes);
 
 
 

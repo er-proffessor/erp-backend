@@ -113,7 +113,7 @@ const getCountersByBranch = async (req, res) => {
 
     const counters = await Counter.find({ branchId, status: "ACTIVE" }).populate("schoolId", "schoolName");
 
-    console.log(counters);
+    // console.log(counters);
 
     const countersWithStock = await Promise.all(
       counters.map(async (counter) => {

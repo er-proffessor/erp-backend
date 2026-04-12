@@ -16,7 +16,7 @@ const orderSchema = new mongoose.Schema(
   counterId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Counter",
-    required: true
+    default: null
   },
 
   buyerType: {
